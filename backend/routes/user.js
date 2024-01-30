@@ -1,20 +1,28 @@
 const express = require("express");
 const User = require("../models/user")
+const Account = require("../models/accounts")
 const router = express.Router();
 const zod = require("zod");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
-const { authMiddleware } = require("../middlewares/autherization");
+//const { authMiddleware } = require("../middlewares/autherization");
+
 
 const signupBody = zod.object({
-    username: zod.string().email,
+    userName: zod.string(),
     firstName: zod.string(),
     lastName: zod.string(),
     password:zod.string()
 
 });
+router.get("/test",async (req,res)=>{
+    const user = User.find({});
+    console.log(user);
+    return res.json({});
+})
 router.post("/signup",async (req,res)=>{
-    const {succes} = signupBody.safeParse(req.body);
+    console.log(req.body);
+    const {success} = signupBody.safeParse(req.body);
     if(!success)
     {
         return res.status(411).json({
@@ -22,7 +30,7 @@ router.post("/signup",async (req,res)=>{
         })
     }
     const user_already_exits = await User.findOne({
-        username:req.body.username
+        username: req.body.userName
     })
     if(user_already_exits)
     {
@@ -33,10 +41,11 @@ router.post("/signup",async (req,res)=>{
 
     //if all goes well
     const user = await User.create({
-        username: req.body.username,
+        username: req.body.userName,
+        
+        firstname: req.body.firstName,
+        lastname: req.body.lastName,
         password: req.body.password,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
     })
 
     const userId = user._id;
@@ -58,7 +67,7 @@ router.post("/signup",async (req,res)=>{
 })
 
 const sigininBody = zod.object({
-    username: zod.string().email(),
+    userName: zod.string().email(),
     password: zod.string()
 })
 router.post("/signin",async (req,res)=>{
@@ -71,7 +80,7 @@ router.post("/signin",async (req,res)=>{
     }
 
     const user = await User.findOne({
-        username:req.body.username,
+        username:req.body.userName,
         password: req.body.password
     });
 
@@ -92,28 +101,28 @@ router.post("/signin",async (req,res)=>{
 
 });
 
-const updateBody = zod.object({
-    password: zod.string().optional(),
-    firstName:zod.string().optional(),
-    lastName: zod.string().optional,
-})
+// const updateBody = zod.object({
+//     password: zod.string().optional(),
+//     firstName:zod.string().optional(),
+//     lastName: zod.string().optional,
+// })
 
-router.put("/",authMiddleware,async(req,res)=>{
-    const {success} = updateBody.safeParse(req.body)
-    if(!success)
-    {
-        res.status(411).json({
-            message:"Error while updating information"
-        })
-    }
-    await User.updateOne(req.body, {
-        id: req.userId
-    })
+// router.put("/",authMiddleware,async(req,res)=>{
+//     const {success} = updateBody.safeParse(req.body)
+//     if(!success)
+//     {
+//         res.status(411).json({
+//             message:"Error while updating information"
+//         })
+//     }
+//     await User.updateOne(req.body, {
+//         id: req.userId
+//     })
 
-    res.json({
-        message: "updated succesfully"
-    })
-})
+//     res.json({
+//         message: "updated succesfully"
+//     })
+// })
 
 router.get("/bulk", async (req, res) => {
     const filter = req.query.filter || "";
@@ -141,4 +150,4 @@ router.get("/bulk", async (req, res) => {
 })
 
 
-modules.export = router;
+module.exports = router;

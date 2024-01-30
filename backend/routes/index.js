@@ -1,7 +1,9 @@
 const express = require("express");
 const User = require("../models/user")
-const accountRouter = require("./account");
+const accountRouter = require("./accounts");
 const router = express.Router();
+const userRouter = require("./user");
+
 
 
 router.use("/user", userRouter);
@@ -11,4 +13,4 @@ router.use("/account", accountRouter);
 
 
 
-modules.export = router;
+module.exports = router;
